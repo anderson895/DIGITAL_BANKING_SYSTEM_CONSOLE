@@ -88,30 +88,35 @@ def create_new_account():
         username = input("\nCreate a username: ")
         if username in bank_data["users"]:
             print("Username is taken. Try another one.")
-        else:
-            password = input("Create a password: ")
-            account_number = str(bank_data["last_account_number"] + 1)
-            deposit = get_deposit()
-
-            if deposit >= 500:
-                bank_data["users"][username] = {
-                    "account_number": account_number,
-                    "password": password,
-                    "balance": deposit,
-                    "deposits": {1000: 0, 500: 0, 200: 0, 100: 0, 50: 0, 20: 0, 10: 0, 5: 0, 1: 0}
-                }
-                bank_data["last_account_number"] += 1
-                update_system_balance(deposit)
-                print(f"Account created successfully! Your account number is {account_number}.")
-                login()
+            attempts += 1
+            if attempts >= 3:
+                print("Too many failed attempts. Returning to the welcome page.")
+                welcome()
                 return
-            else:
-                print("Minimum deposit is PHP 500. Please try again.")
-                attempts += 1
-                if attempts >= 3:
-                    print("Too many failed attempts. Returning to the welcome page.")
-                    welcome()
-                    return
+            continue  # Loop back to allow for a new username input
+
+        password = input("Create a password: ")
+        deposit = get_deposit()
+
+        if deposit >= 500:
+            bank_data["users"][username] = {
+                "account_number": str(bank_data["last_account_number"] + 1),
+                "password": password,
+                "balance": deposit,
+                "deposits": {1000: 0, 500: 0, 200: 0, 100: 0, 50: 0, 20: 0, 10: 0, 5: 0, 1: 0}
+            }
+            bank_data["last_account_number"] += 1
+            update_system_balance(deposit)
+            print(f"Account created successfully! Your account number is {bank_data['users'][username]['account_number']}.")
+            login()
+            return
+        else:
+            print("Minimum deposit is PHP 500. Please try again.")
+            attempts += 1
+            if attempts >= 3:
+                print("Too many failed attempts. Returning to the welcome page.")
+                welcome()
+                return
 
 
 def get_deposit():
@@ -235,6 +240,7 @@ def close_account(username):
         else:
             attempts += 1
             print(f"Incorrect password. {3 - attempts} attempts left.")
+
     print("Too many failed attempts. Returning to the transactions page.")
     transactions(username)
 
